@@ -1,0 +1,12 @@
+---
+import { LoadSVG } from "../scripts/svg-loader";
+const width   : number = Astro.props.width  ?? 32;
+const height  : number = Astro.props.height ?? 32;
+
+let icon : string = LoadSVG(Astro.props.icon);
+---
+
+<svg width = {width} height = {height} viewBox = `0 0 32 32`
+     xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" version="1.1"
+     set:html={icon}>
+</svg>

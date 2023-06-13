@@ -17,13 +17,19 @@ hero:
       icon: external
 ---
 
-import {Card, CardGrid} from '@astrojs/starlight/components';
+import { Card, CardGrid } from '@astrojs/starlight/components';
+import Icon from '../../components/Icon.astro';
 
 ### Available Tools
 
 <CardGrid>
-<Card title="Dropl">
-A deferred runtime operation library used to execute instructions over time
-</Card>
+
+  <Card title="Dropl">
+  <Icon icon='fluent-droplet' width = '48' height = '48' /> A deferred runtime operation library used to execute instructions over time
+  </Card>
+
+  <Card title="Singleton">
+  A simple singleton library for Unity
+  </Card>
 
 </CardGrid>
