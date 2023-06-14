@@ -5,7 +5,7 @@ template: splash
 hero:
   tagline: Read the documentation for all the open-source gamedev tools by hibzz.games
   image:
-    file: ../../assets/wrench_color.svg
+    file: ../../assets/wrench_3d.png
     alt: An icon of a wrench
   actions:
     - text: Sponsor us on GitHub
@@ -17,18 +17,17 @@ hero:
       icon: external
 ---
 
-import { Card, CardGrid } from '@astrojs/starlight/components';
-import Icon from '../../components/Icon.astro';
+import CardGrid from '@components/CardGrid.astro';
+import Card from '@components/Card.astro';
 
 ### Available Tools
 
 <CardGrid>
-
-  <Card title="Dropl">
-  <Icon icon='fluent-droplet' width = '48' height = '48' /> A deferred runtime operation library used to execute instructions over time
+  <Card title="Dropl" icon='fluent-emoji:droplet' link='/dropl/installation'>
+  A deferred runtime operation library used to execute instructions over time
   </Card>
 
-  <Card title="Singleton">
+  <Card title="Singleton" icon='fluent-emoji:file-cabinet'>
   A simple singleton library for Unity
   </Card>
 
