@@ -1,0 +1,41 @@
+diff --git a/node_modules/@astrojs/starlight/utils/navigation.ts b/node_modules/@astrojs/starlight/utils/navigation.ts
+index 0228d4a..af1f5f7 100644
+--- a/node_modules/@astrojs/starlight/utils/navigation.ts
++++ b/node_modules/@astrojs/starlight/utils/navigation.ts
+@@ -191,15 +191,35 @@ function dirToItem(
+     : groupFromDir(dirOrSlug, fullPath, dirName, currentPathname, locale);
+ }
+ 
++function filterSidebar(entries: SidebarEntry[], root_name: string) : SidebarEntry[] {
++  return entries.map( entry => { 
++    return {...entry} 
++  }).filter(entry => {
++    if(entry.type == 'group') {
++      entry.entries = filterSidebar(entry.entries, root_name);
++      return entry.entries.length != 0; // we only want groups that have content in it
++    }
++
++    if(entry.type == 'link') {
++      return entry.href.startsWith(root_name);
++    }
++  });
++}
++
+ /** Create a sidebar entry for a given content directory. */
+ function sidebarFromDir(
+   tree: Dir,
+   currentPathname: string,
+   locale: string | undefined
+ ) {
+-  return Object.entries(tree).map(([key, dirOrSlug]) =>
++  let sidebar_entries = Object.entries(tree).map(([key, dirOrSlug]) =>
+     dirToItem(dirOrSlug, key, key, currentPathname, locale)
+   );
++
++  // start from position 1 to select the second '/' as the first '/' is guaranteed to be in the 0th position
++  // add +1 to the index of to include the '/' in the root name
++  let root_name = currentPathname.substring(0, currentPathname.indexOf('/', 1) + 1);
++  return filterSidebar(sidebar_entries, root_name);
+ }
+ 
+ /** Get the sidebar for the current page. */
