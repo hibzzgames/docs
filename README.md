@@ -18,5 +18,23 @@ Additionally, custom components are available to use, such as a custom implement
 
 <br>
 
+## 📦 Adding a new tool
+Tools must be added as a submodule and can be done so by running the following command from the root of the repository:
+
+```bash
+git submodule add -b docs <git_url> .\src\content\docs\<tool_name>
+```
+
+The content of a submodule can be updated using the following command:
+
+```bash
+git submodule update --remote
+```
+
+Additionally, make sure to update `index.mdx` with a card containing the tool's name, description, and link to the documentation.
+
+
 ## 😍 Contributing
 Contributions are welcome! The tools that I have created haven't grown to the point where I need to add contribution guidelines and such. If you want to contribute, please create a pull request with your changes and I'll review it as soon as possible. If you're unsure about something, feel free to create an issue and I'll get back to you.
+
+
