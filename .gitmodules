@@ -1,4 +1,8 @@
-[submodule ".\\src\\content\\docs\\singletons"]
-	path = .\\src\\content\\docs\\singletons
+[submodule "src/content/docs/singletons"]
+	path = src/content/docs/singletons
 	url = https://github.com/hibzzgames/Hibzz.Singletons.git
+	branch = docs
+[submodule "src/content/docs/dropl"]
+	path = src/content/docs/dropl
+	url = https://github.com/hibzzgames/Hibzz.Dropl.git
 	branch = docs
