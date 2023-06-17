@@ -3,25 +3,15 @@ import starlight from '@astrojs/starlight';
 
 // https://astro.build/config
 export default defineConfig({
+  site: 'https://hibzzgames.github.io',
   integrations: [
     starlight({
-      title: 'My Docs',
+      title: 'Hibzz.Docs',
       social: {
-        github: 'https://github.com/withastro/starlight',
+        github: 'https://github.com/hibzzgames/',
+        discord: 'https://discord.gg/YXdJ8cZngB',
+        twitter: 'https://twitter.com/hibzzgames',
       },
-      sidebar: [
-        {
-          label: 'Guides',
-          items: [
-            // Each item here is one entry in the navigation menu.
-            { label: 'Example Guide', link: '/guides/example/' },
-          ],
-        },
-        {
-          label: 'Reference',
-          autogenerate: { directory: 'reference' },
-        },
-      ],
     }),
   ],
 });
