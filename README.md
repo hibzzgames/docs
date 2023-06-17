@@ -22,7 +22,7 @@ Additionally, custom components are available to use, such as a custom implement
 Tools must be added as a submodule and can be done so by running the following command from the root of the repository:
 
 ```bash
-git submodule add -b docs <git_url> .\src\content\docs\<tool_name>
+git submodule add -b docs <git_url> /src/content/docs/<tool_name>
 ```
 
 The content of a submodule can be updated using the following command:
