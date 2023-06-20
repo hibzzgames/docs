@@ -12,6 +12,11 @@ export default defineConfig({
         discord: 'https://discord.gg/YXdJ8cZngB',
         twitter: 'https://twitter.com/hibzzgames',
       },
+      customCss: [
+        '@fontsource/poppins/400.css',
+        '@fontsource/poppins/600.css',
+        '/src/styles/custom.css'
+      ],
     }),
   ],
 });
