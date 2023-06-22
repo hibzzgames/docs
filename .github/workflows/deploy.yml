@@ -2,8 +2,8 @@ name: Deploy Webpage
 
 on:
   # Trigger when content pushed to the main branch
-  #push: 
-  #  branches: [ master ]
+  push: 
+    branches: [ master ]
   
   # Let's workflow run manually
   workflow_dispatch:
