@@ -1,13 +1,80 @@
+diff --git a/node_modules/@astrojs/starlight/schema.ts b/node_modules/@astrojs/starlight/schema.ts
+index 690e155..1e1c8ed 100644
+--- a/node_modules/@astrojs/starlight/schema.ts
++++ b/node_modules/@astrojs/starlight/schema.ts
+@@ -37,6 +37,11 @@ export function docsSchema() {
+        */
+       description: z.string().optional(),
+ 
++      /**
++       * The priority used to sort the content in the sidebar
++       */
++      priority: z.number().optional(),
++
+       /**
+        * Custom URL where a reader can edit this page.
+        * Overrides the `editLink.baseUrl` global config if set.
 diff --git a/node_modules/@astrojs/starlight/utils/navigation.ts b/node_modules/@astrojs/starlight/utils/navigation.ts
-index 0228d4a..af1f5f7 100644
+index 0228d4a..4ea9cc0 100644
 --- a/node_modules/@astrojs/starlight/utils/navigation.ts
 +++ b/node_modules/@astrojs/starlight/utils/navigation.ts
-@@ -191,15 +191,35 @@ function dirToItem(
+@@ -9,12 +9,15 @@ import type {
+   SidebarItem,
+   SidebarLinkItem,
+ } from './user-config';
++import { number } from 'astro/zod';
++
+ 
+ export interface Link {
+   type: 'link';
+   label: string;
+   href: string;
+   isCurrent: boolean;
++  priority: number;
+ }
+ 
+ interface Group {
+@@ -104,14 +107,15 @@ function linkFromConfig(
+     if (locale) href = '/' + locale + href;
+   }
+   const label = pickLang(item.translations, localeToLang(locale)) || item.label;
+-  return makeLink(href, label, currentPathname);
++  return makeLink(href, label, currentPathname, 0);
+ }
+ 
+ /** Create a link entry. */
+-function makeLink(href: string, label: string, currentPathname: string): Link {
++function makeLink(href: string, label: string, currentPathname: string, priority: number | undefined): Link {
+   if (!isAbsolute(href)) href = pathWithBase(href);
+   const isCurrent = href === currentPathname;
+-  return { type: 'link', label, href, isCurrent };
++  priority ??= Number.MAX_SAFE_INTEGER;
++  return { type: 'link', label, href, isCurrent, priority };
+ }
+ 
+ /** Get the segments leading to a page. */
+@@ -156,10 +160,13 @@ function linkFromSlug(slug: string, currentPathname: string): Link {
+   return makeLink(
+     slugToPathname(doc.slug),
+     doc.entry.data.title,
+-    currentPathname
++    currentPathname,
++    doc.entry.data.priority,
+   );
+ }
+ 
++
++
+ /** Create a group entry for a given content collection directory. */
+ function groupFromDir(
+   dir: Dir,
+@@ -191,15 +198,74 @@ function dirToItem(
      : groupFromDir(dirOrSlug, fullPath, dirName, currentPathname, locale);
  }
  
-+function filterSidebar(entries: SidebarEntry[], root_name: string) : SidebarEntry[] {
-+  return entries.map( entry => { 
++function filterSidebar(entries: SidebarEntry[], root_name: string) : SidebarEntry[] { 
++  // filter the sidebar to contain just the tools we need
++   return entries.map( entry => { 
 +    return {...entry} 
 +  }).filter(entry => {
 +    if(entry.type == 'group') {
@@ -21,11 +88,49 @@ index 0228d4a..af1f5f7 100644
 +  });
 +}
 +
++function sortSidebar(entries: SidebarEntry[]) : SidebarEntry[] {
++  // if there's only 1 element to sort, map sort will not be called
++  // that makes logical sense, but we have children entries that needs to be sorted as well.
++  // so taking care of that here
++  if(entries.length == 1) {
++    if(entries[0].type == "group") {
++      entries = entries[0].entries;
++    }
++  }
++
++  // sort by link priority
++  return entries.map( entry => { 
++    return {...entry} 
++  }).sort((a, b) => 
++  {
++    // as of now, we only know how to sort entries two links, so ignore if any is a group
++    if(a.type === 'group' || b.type === 'group') 
++    {
++      // the recursive loops might perform sorting operation on an already sorted 
++      // list, but better to be correct than fast
++
++      // recursive loop on the A side
++      if(a.type === 'group') {
++        a.entries = sortSidebar(a.entries);
++      }
++
++      // recursive loop on b side
++      if(b.type === 'group') {
++        b.entries = sortSidebar(b.entries);
++      }
++
++      return 0; 
++    }
++    return a.priority - b.priority;
++  });
++}
++
  /** Create a sidebar entry for a given content directory. */
  function sidebarFromDir(
    tree: Dir,
    currentPathname: string,
-   locale: string | undefined
+-  locale: string | undefined
++  locale: string | undefined,
  ) {
 -  return Object.entries(tree).map(([key, dirOrSlug]) =>
 +  let sidebar_entries = Object.entries(tree).map(([key, dirOrSlug]) =>
@@ -35,7 +140,16 @@ index 0228d4a..af1f5f7 100644
 +  // start from position 1 to select the second '/' as the first '/' is guaranteed to be in the 0th position
 +  // add +1 to the index of to include the '/' in the root name
 +  let root_name = currentPathname.substring(0, currentPathname.indexOf('/', 1) + 1);
-+  return filterSidebar(sidebar_entries, root_name);
++  let filtered_sidebar = filterSidebar(sidebar_entries, root_name);
++  return sortSidebar(filtered_sidebar);
  }
  
  /** Get the sidebar for the current page. */
+@@ -207,6 +273,7 @@ export function getSidebar(
+   pathname: string,
+   locale: string | undefined
+ ): SidebarEntry[] {
++  
+   const routes = getLocaleRoutes(locale);
+   if (config.sidebar) {
+     return config.sidebar.map((group) =>
