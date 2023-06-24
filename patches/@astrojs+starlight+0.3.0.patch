@@ -1,5 +1,21 @@
+diff --git a/node_modules/@astrojs/starlight/schema.ts b/node_modules/@astrojs/starlight/schema.ts
+index 690e155..b7b1815 100644
+--- a/node_modules/@astrojs/starlight/schema.ts
++++ b/node_modules/@astrojs/starlight/schema.ts
+@@ -37,6 +37,11 @@ export function docsSchema() {
+        */
+       description: z.string().optional(),
+ 
++      /**
++       * An optional number that represents the priority of the page in the sidebar
++       */
++      priority: z.number().optional(),
++
+       /**
+        * Custom URL where a reader can edit this page.
+        * Overrides the `editLink.baseUrl` global config if set.
 diff --git a/node_modules/@astrojs/starlight/utils/navigation.ts b/node_modules/@astrojs/starlight/utils/navigation.ts
-index 8e9fea3..e5e70d8 100644
+index 8e9fea3..d58a506 100644
 --- a/node_modules/@astrojs/starlight/utils/navigation.ts
 +++ b/node_modules/@astrojs/starlight/utils/navigation.ts
 @@ -15,6 +15,7 @@ export interface Link {
@@ -39,7 +55,7 @@ index 8e9fea3..e5e70d8 100644
    );
  }
  
-@@ -193,15 +196,76 @@ function dirToItem(
+@@ -193,15 +196,84 @@ function dirToItem(
      : groupFromDir(dirOrSlug, fullPath, dirName, currentPathname, locale);
  }
  
@@ -59,43 +75,51 @@ index 8e9fea3..e5e70d8 100644
 +  });
 +}
 +
-+function sortSidebar(entries: SidebarEntry[]) : SidebarEntry[] {
-+  // if there's only 1 element to sort, map sort will not be called
-+  // that makes logical sense, but we have children entries that needs to be sorted as well.
-+  // so taking care of that here
-+  if(entries.length == 1) {
-+    if(entries[0].type == "group") {
-+      entries = entries[0].entries;
-+    }
++// find an entries priority
++function getSidebarEntryPriority(entry: SidebarEntry) : number {
++  if(entry.type === 'link') {
++    return entry.priority;
 +  }
 +
-+  // sort by link priority
-+  return entries.map( entry => { 
-+    return {...entry} 
-+  }).sort((a, b) => 
-+  {
-+    // as of now, we only know how to sort entries two links, so ignore if any is a group
-+    if(a.type === 'group' || b.type === 'group') 
-+    {
-+      // the recursive loops might perform sorting operation on an already sorted 
-+      // list, but better to be correct than fast
++  // we are dealing with a group, and group's priority is said to be the lowest priority of its child elements
++  // for some reason if the entry if the entries are empty, then it would be the max value
++  if(entry.entries.length <= 0) { return Number.MAX_SAFE_INTEGER; }
 +
-+      // TODO: group must be storted based on the page with the highest priority
-+
-+      // recursive loop on the A side
-+      if(a.type === 'group') {
-+        a.entries = sortSidebar(a.entries);
-+      }
-+
-+      // recursive loop on b side
-+      if(b.type === 'group') {
-+        b.entries = sortSidebar(b.entries);
-+      }
-+
-+      return 0; 
++  // loop through each entry to find the lowest priority
++  let lowest : number = Number.MAX_SAFE_INTEGER;
++  entry.entries.forEach(sub_entry => {
++    let sub_entry_prio = getSidebarEntryPriority(sub_entry);
++    if(sub_entry_prio < lowest) {
++      lowest = sub_entry_prio;
 +    }
-+    return a.priority - b.priority;
 +  });
++
++  // now return the lowest
++  return lowest;
++}
++
++// determines how to compare two sidebar entries
++function compareSidebarEntry(a: SidebarEntry, b: SidebarEntry) : number {
++  return getSidebarEntryPriority(a) - getSidebarEntryPriority(b);
++}
++
++// sort the sidebar
++function sortSidebar(entries: SidebarEntry[]) : SidebarEntry[] {
++  
++  // perform sort on self
++  entries = entries.sort(compareSidebarEntry);
++
++  // then perform sort on any child entries
++  entries.map( entry => {
++    return {...entry}
++  }).forEach((entry) => {
++    if(entry.type === 'group') {
++      entry.entries = sortSidebar(entry.entries);
++    }
++  });
++
++  // done!
++  return entries;
 +}
 +
  /** Create a sidebar entry for a given content directory. */
