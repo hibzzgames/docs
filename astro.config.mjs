@@ -19,4 +19,11 @@ export default defineConfig({
       ],
     }),
   ],
+  experimental: {
+    redirects: true
+  },
+  redirects: {
+    '/dropl': '/dropl/getting-started',
+    '/singletons': '/singletons/getting-started'
+  }
 });
